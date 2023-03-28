@@ -17,10 +17,9 @@ static std::string PASSWORD;
 
 ////////////
 struct TvStream {
-    std::string lang;
+    std::string cgroup;
     std::string title;
     std::string link;
-    std::string mtype;
 };
 
 
@@ -28,17 +27,16 @@ std::string batchData(std::vector<TvStream>& data) {
 
   std::string query;
 
-  query = "INSERT INTO data (lang,title,link,mtype) VALUES\n";
+  query = "INSERT INTO data (cgroup,title,link) VALUES\n";
     
   for (int i = 0; i < data.size(); i++) 
       {
           TvStream element = data[i];
-          query = query + "(\"" + element.lang + "\",\"" + element.title + "\",\"" + element.link + "\", \"" + element.mtype + "\"),"; 
+          query = query + "(\"" + element.cgroup + "\",\"" + element.title + "\",\"" + element.link + "\"),"; 
       }
 
     query[query.size() - 1] = ';';
-
-   return query;
+    return query;
 }
 
 
@@ -108,31 +106,29 @@ if (file.is_open()) {
 
 
             if (line[0] == '#') {
-                std::size_t found = line.find_first_of("[");
-                std::string lang = line.substr(found+1,2);
-                std::string title = line.substr(found+4, line.size()-found-2);
-                streamEntry.lang = lang;
+                
+                std::size_t found = line.find("group-title=");
+              
+                std::string sub_string = line.substr(found+12, line.size());
+                
+                std::size_t found2 = sub_string.find("\",");
+
+                std::string cgroup = sub_string.substr(1, found2 - 1);
+                
+                std::string title = sub_string.substr(found2 + 2, sub_string.size());
+                
+                streamEntry.cgroup = trim(cgroup);
                 streamEntry.title = trim(title);
             }
+
             else {
                 streamEntry.link = trim(line);
-                if (line.find("/movie/") != std::string::npos) {
-                    streamEntry.mtype = "m";
-                }
-                else if (line.find("/series/") != std::string::npos){
-                    streamEntry.mtype = "s";
-                }
-                else {
-                    streamEntry.mtype = "l";
-                }
-
-                if (streamEntry.lang == "EN" || streamEntry.lang == "UK" || streamEntry.lang == "US" || streamEntry.lang == "NO" || streamEntry.lang == "FR") {
-                   data.push_back(streamEntry);
+                data.push_back(streamEntry);
                 }            
         }
     }    
         file.close();            
-}
+
 
 insertData(data);
 
