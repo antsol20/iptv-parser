@@ -14,6 +14,8 @@ const std::string server = "tcp://localhost:3306";
 const std::string username = "admin";
 static std::string INPUT_FILE;
 static std::string PASSWORD;
+static std::string DB;
+static std::string TABLE;
 
 ////////////
 struct TvStream {
@@ -27,7 +29,7 @@ std::string batchData(std::vector<TvStream>& data) {
 
   std::string query;
 
-  query = "INSERT INTO data (cgroup,title,link) VALUES\n";
+  query = "INSERT INTO " + TABLE + " (cgroup,title,link) VALUES\n";
     
   for (int i = 0; i < data.size(); i++) 
       {
@@ -60,10 +62,10 @@ void insertData(std::vector<TvStream>& data)
 	}
 
     
-	con->setSchema("iptv");
+	con->setSchema(DB);
 
     stmt = con->createStatement();
-	stmt->execute("DELETE from data;");
+	stmt->execute("DELETE from " + TABLE + ";");
     delete stmt;
 
 
@@ -89,6 +91,8 @@ int main(int argc, char** argv) {
 
 INPUT_FILE = argv[1];
 PASSWORD = argv[2];
+DB = argv[3];
+TABLE = argv[4];
 
 std::vector<TvStream> data;
 
@@ -117,12 +121,12 @@ if (file.is_open()) {
                 
                 std::string title = sub_string.substr(found2 + 2, sub_string.size());
                 
-                streamEntry.cgroup = trim(cgroup);
-                streamEntry.title = trim(title);
+                streamEntry.title = ReplaceAll(trim(title), std::string("\""), std::string(""));
+                streamEntry.cgroup = ReplaceAll(trim(cgroup), std::string("\""), std::string(""));
             }
 
             else {
-                streamEntry.link = trim(line);
+                streamEntry.link = ReplaceAll(trim(line), std::string("\""), std::string(""));
                 data.push_back(streamEntry);
                 }            
         }
