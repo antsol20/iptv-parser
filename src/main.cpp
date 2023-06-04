@@ -121,7 +121,7 @@ if (file.is_open()) {
                 
                 std::string title = sub_string.substr(found2 + 2, sub_string.size());
                 
-                streamEntry.title = ReplaceAll(trim(title), std::string("\""), std::string(""));
+                streamEntry.title = ReplaceAll(ReplaceAll(trim(title), std::string("\""), std::string("")), std::string("\\"), std::string(""));
                 streamEntry.cgroup = ReplaceAll(trim(cgroup), std::string("\""), std::string(""));
             }
 
